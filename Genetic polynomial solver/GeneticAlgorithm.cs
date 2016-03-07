@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Channels;
 
 namespace Genetic_polynomial_solver {
     class GeneticAlgorithm {
@@ -85,12 +86,19 @@ namespace Genetic_polynomial_solver {
             return elitePopulation.Concat(childPopulation).Concat(randomIntroducedPopulation).ToList();
         }
 
-        //Distance squared fitness function
+        //Distance squared fitness function, with curve fitting tendency
         private static void Fitness(Chromosome chromosome) {
             double differenceTotal = 0;
             for (int i = 0; i < chromosome.YValues.Length; i++) {
                 double difference = Math.Abs(chromosome.YValues[i] - ChuPolynomialValues.YValues[i]);
-                differenceTotal += difference*difference; //point distance squared
+                if (i > 0) { //curve fitting
+                    int prevDifferenceTarget = Math.Sign(ChuPolynomialValues.YValues[i] - ChuPolynomialValues.YValues[i - 1]);
+                    int prevDifferenceCalculated = Math.Sign(chromosome.YValues[i] - chromosome.YValues[i - 1]);
+                    if (prevDifferenceCalculated != prevDifferenceTarget) {
+                        difference *= 2;  //double any difference if gradient direction does not match
+                    }
+                }
+                differenceTotal += difference * difference; //point distance squared
             }
             chromosome.Fitness = differenceTotal;
         }

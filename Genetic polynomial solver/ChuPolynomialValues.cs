@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Genetic_polynomial_solver {
+﻿namespace Genetic_polynomial_solver {
     internal static class ChuPolynomialValues {
         public static double[] XValues = {
             -25,

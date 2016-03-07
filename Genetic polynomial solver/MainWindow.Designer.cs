@@ -93,9 +93,10 @@
             this.chartResult.ChartAreas.Add(chartArea1);
             legend1.Name = "Legend1";
             this.chartResult.Legends.Add(legend1);
-            this.chartResult.Location = new System.Drawing.Point(0, 0);
+            this.chartResult.Location = new System.Drawing.Point(-4, 4);
             this.chartResult.Name = "chartResult";
             series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
             series1.Legend = "Legend1";
             series1.Name = "Series1";
             this.chartResult.Series.Add(series1);
@@ -109,13 +110,14 @@
             this.chartProgress.ChartAreas.Add(chartArea2);
             legend2.Name = "Legend1";
             this.chartProgress.Legends.Add(legend2);
-            this.chartProgress.Location = new System.Drawing.Point(1079, 3);
+            this.chartProgress.Location = new System.Drawing.Point(843, 3);
             this.chartProgress.Name = "chartProgress";
             series2.ChartArea = "ChartArea1";
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
             series2.Legend = "Legend1";
             series2.Name = "Series1";
             this.chartProgress.Series.Add(series2);
-            this.chartProgress.Size = new System.Drawing.Size(648, 798);
+            this.chartProgress.Size = new System.Drawing.Size(877, 798);
             this.chartProgress.TabIndex = 6;
             this.chartProgress.Text = "chart2";
             // 

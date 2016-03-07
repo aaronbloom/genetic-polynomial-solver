@@ -1,117 +1,105 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Genetic_polynomial_solver {
     class GeneticAlgorithm {
 
-        public readonly int PopulationSize = 1000;
-        public readonly int Generations = 150;
-        public static readonly double UpperBound = 1;
-        public static readonly double LowerBound = -1;
-        static readonly Random Random = new Random();
+        public readonly int POPULATION_SIZE = 10000;
+        public readonly int GENERATIONS = 100;
+        public static readonly double HARSH_MUTATION_CHANCE = 0.9;
+        public static readonly double REGULAR_MUTATION_CHANCE = 0.4;
+        public static readonly int REGULAR_MUTATION_FACTOR = 10000;
+        public static readonly int ELITE_POPULATION_PERCENTAGE = 20;
+        public static readonly int RANDOM_POPULATION_PERCENTAGE = 30;
+        static readonly Random random = new Random();
 
         public void Run(System.ComponentModel.BackgroundWorker worker, System.ComponentModel.DoWorkEventArgs e) {
             
-            List<Chromosome> population = new List<Chromosome>(PopulationSize);
+            List<Chromosome> population = new List<Chromosome>(POPULATION_SIZE);
 
-            for (int i = 0; i < PopulationSize; i++) {
-                population.Add(new Chromosome(Polynomial.CoefficientCount));
+            //initial random chromosome generation
+            for (int i = 0; i < POPULATION_SIZE; i++) {
+                population.Add(new Chromosome(Polynomial.CoefficientCount, random));
             }
 
-            for (int i = 0; i < Generations; i++) {
+            //loop through generations of chromosomes
+            for (int i = 0; i < GENERATIONS; i++) {
                 population = RunGeneration(population);
+                worker.ReportProgress(i / POPULATION_SIZE * 100, population);
                 System.Diagnostics.Debug.WriteLine("Generation: " + i);
-                if (i%5 == 0) {
-                    worker.ReportProgress(0, population);
-                }
                 population = RunBreeding(population);
             }
-
-           worker.ReportProgress(0, population);
-
         }
 
+        //Loop through chromosomes and apply them to the polynomial and evaluate their fitness
         private List<Chromosome> RunGeneration(List<Chromosome> population) {
             Polynomial polynomial = new Polynomial();
-            for (int i = 0; i < PopulationSize; i++) {
+            for (int i = 0; i < POPULATION_SIZE; i++) {
                 polynomial.Run(ChuPolynomialValues.XValues, population[i]);
                 Fitness(population[i]);
             }
             return population;
         }
 
+        //Breed and mutate the chromosomes
         private List<Chromosome> RunBreeding(List<Chromosome> population) {
-            var sortedPopulation = population.OrderBy(chromosome => chromosome.Fitness).ToArray();
+            var sortedPopulation = population.OrderBy(chromosome => chromosome.Fitness).ToList();
 
-            int elitePopulationSize = (PopulationSize/100)*10; //%
-
+            //elite population creation
+            int elitePopulationSize = (POPULATION_SIZE/100)*ELITE_POPULATION_PERCENTAGE; //%
             List<Chromosome> elitePopulation = new List<Chromosome>(elitePopulationSize);
             for (int i = 0; i < elitePopulationSize; i++) {
                 elitePopulation.Add(sortedPopulation[i]);
             }
 
-            int randomIntroducedPopulation = (PopulationSize/100)*10; //%
-            List<Chromosome> randomIntorducedPopulation = new List<Chromosome>(elitePopulationSize);
-            for (int i = 0; i < randomIntroducedPopulation; i++) {
-                randomIntorducedPopulation.Add(new Chromosome(Polynomial.CoefficientCount));
+            //random introduced population creation
+            int randomIntroducedPopulationSize = (POPULATION_SIZE/100)*RANDOM_POPULATION_PERCENTAGE; //%
+            List<Chromosome> randomIntroducedPopulation = new List<Chromosome>(randomIntroducedPopulationSize);
+            for (int i = 0; i < randomIntroducedPopulationSize; i++) {
+                randomIntroducedPopulation.Add(new Chromosome(Polynomial.CoefficientCount, random));
             }
 
-            int breedingPopulationSize = (PopulationSize - elitePopulationSize) - randomIntroducedPopulation;
-            List<Chromosome> breedingPopulation = new List<Chromosome>(PopulationSize);
-            //breed these
+            int childPopulationSize = (POPULATION_SIZE - elitePopulationSize) - randomIntroducedPopulationSize;
+            List<Chromosome> childPopulation = new List<Chromosome>(childPopulationSize);
 
-//            for (int i = 0; i < breedingPopulationSize; i+=2) {
-//                Chromosome[] children = UniformCrossover(sortedPopulation[Random.Next(0, PopulationSize-elitePopulationSize)], sortedPopulation[Random.Next(0, PopulationSize-elitePopulationSize)]);
-//                breedingPopulation.Add(children[0]);
-//                breedingPopulation.Add(children[1]);
-//            }
-
-            for (int i = 0; i < breedingPopulationSize; i++) {
-                Chromosome child = OneChildUniformCrossover(sortedPopulation[Random.Next(0, PopulationSize)], sortedPopulation[Random.Next(0, PopulationSize)]);
-                breedingPopulation.Add(child);
+            //elite breeding (half the child population)
+            for (int i = 0; i < childPopulationSize/2; i++) {
+                Chromosome child = OneChildUniformCrossover(sortedPopulation[random.Next(0, elitePopulationSize)], sortedPopulation[random.Next(0, elitePopulationSize)]);
+                childPopulation.Add(child);
             }
 
-            foreach (Chromosome chromosome in breedingPopulation) {
-                Mutation(chromosome, 0.9);
-                HarshMutation(chromosome, 0.5);
+            //entire population breeding  (half the child population)
+            for (int i = 0; i < childPopulationSize/2; i++) {
+                Chromosome child = OneChildUniformCrossover(sortedPopulation[random.Next(0, POPULATION_SIZE)], sortedPopulation[random.Next(0, POPULATION_SIZE)]);
+                childPopulation.Add(child);
             }
 
-            return elitePopulation.Concat(breedingPopulation).Concat(randomIntorducedPopulation).ToList();
+            //mutation of child population
+            foreach (Chromosome chromosome in childPopulation) {
+                RegularMutation(chromosome, REGULAR_MUTATION_CHANCE);
+                HarshMutation(chromosome, HARSH_MUTATION_CHANCE);
+            }
+
+            //creation of new generation
+            return elitePopulation.Concat(childPopulation).Concat(randomIntroducedPopulation).ToList();
         }
 
-
-        private double Fitness(Chromosome chromosome) {
+        //Distance squared fitness function
+        private static void Fitness(Chromosome chromosome) {
             double differenceTotal = 0;
             for (int i = 0; i < chromosome.YValues.Length; i++) {
                 double difference = Math.Abs(chromosome.YValues[i] - ChuPolynomialValues.YValues[i]);
-                differenceTotal += difference*difference;
+                differenceTotal += difference*difference; //point distance squared
             }
             chromosome.Fitness = differenceTotal;
-            return differenceTotal;
         }
 
-        private Chromosome[] UniformCrossover(Chromosome parentOne, Chromosome parentTwo) {
-            double[] childOneGene = new double[Polynomial.CoefficientCount];
-            double[] childTwoGene = new double[Polynomial.CoefficientCount];
-            for (int i = 0; i < Polynomial.CoefficientCount; i++) {
-                if (Random.NextDouble() > 0.5d) {
-                    childOneGene[i] = parentOne.Genome[i];
-                    childTwoGene[i] = parentTwo.Genome[i];
-                } else {
-                    childOneGene[i] = parentTwo.Genome[i];
-                    childTwoGene[i] = parentOne.Genome[i];
-                }
-            }
-            return new[] { new Chromosome(childOneGene), new Chromosome(childTwoGene) };
-        }
-
-        private Chromosome OneChildUniformCrossover(Chromosome parentOne, Chromosome parentTwo) {
+        //One child uniform crossover breeding with two parents
+        private static Chromosome OneChildUniformCrossover(Chromosome parentOne, Chromosome parentTwo) {
             double[] childOneGene = new double[Polynomial.CoefficientCount];
             for (int i = 0; i < Polynomial.CoefficientCount; i++) {
-                if (Random.NextDouble() > 0.5d) {
+                if (random.NextDouble() > 0.5d) {
                     childOneGene[i] = parentOne.Genome[i];
                 } else {
                     childOneGene[i] = parentTwo.Genome[i];
@@ -120,40 +108,20 @@ namespace Genetic_polynomial_solver {
             return new Chromosome(childOneGene);
         }
 
-        private Chromosome[] OnePointCrossover(Chromosome parentOne, Chromosome parentTwo) {
-            int crossoverPoint = Random.Next(1, Polynomial.CoefficientCount - 1);
-            double[] childOneGene = new double[Polynomial.CoefficientCount];
-            double[] childTwoGene = new double[Polynomial.CoefficientCount];
-            for (int i = 0; i < Polynomial.CoefficientCount; i++) {
-                if (i < crossoverPoint) {
-                    childOneGene[i] = parentOne.Genome[i];
-                    childTwoGene[i] = parentTwo.Genome[i];
-                } else {
-                    childOneGene[i] = parentTwo.Genome[i];
-                    childTwoGene[i] = parentOne.Genome[i];
-                }
+        //Deviates one gene of a chromosome by a percentage factor of the value
+        private static void RegularMutation(Chromosome chromosome, double probability) {
+            if (random.NextDouble() <= probability) {
+                int gene = random.Next(0, Polynomial.CoefficientCount);
+                chromosome.Genome[gene] += ((random.NextDouble() - 0.5d) * chromosome.Genome[gene]) / random.Next(1, REGULAR_MUTATION_FACTOR);
             }
-            return new []{ new Chromosome(childOneGene), new Chromosome(childTwoGene) };
         }
 
-        private Chromosome Mutation(Chromosome chromosome, double probability) {
-            if (Random.NextDouble() <= probability) {
-                int gene = Random.Next(0, Polynomial.CoefficientCount);
-                chromosome.Genome[gene] += ((Random.NextDouble() - 0.5d) * chromosome.Genome[gene]) / Random.Next(1,1000000);
+        //Randomly change one gene of a chromosome to a brand new random gene value
+        private void HarshMutation(Chromosome chromosome, double probability) {
+            if (random.NextDouble() <= probability) {
+                int gene = random.Next(0, Polynomial.CoefficientCount);
+                chromosome.Genome[gene] = Chromosome.RandomValidGene(random);
             }
-            return chromosome;
-        }
-
-        private Chromosome HarshMutation(Chromosome chromosome, double probability) {
-            if (Random.NextDouble() <= probability) {
-                int gene = Random.Next(0, Polynomial.CoefficientCount);
-                chromosome.Genome[gene] = RandomValidGene();
-            }
-            return chromosome;
-        }
-
-        public static double RandomValidGene() {
-            return Random.NextDouble() * (UpperBound - LowerBound) + LowerBound;
         }
     }
 }

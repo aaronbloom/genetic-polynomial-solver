@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+using Genetic_polynomial_solver.Algorithm;
 
 namespace Genetic_polynomial_solver {
     public partial class MainWindow : Form {

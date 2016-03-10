@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Genetic_polynomial_solver {
+namespace Genetic_polynomial_solver.Algorithm {
     class Chromosome {
         public double[] Genome { get; }
         public double[] YValues { get; set; }

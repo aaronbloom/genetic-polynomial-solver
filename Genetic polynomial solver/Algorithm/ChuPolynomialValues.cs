@@ -1,4 +1,4 @@
-﻿namespace Genetic_polynomial_solver {
+﻿namespace Genetic_polynomial_solver.Algorithm {
     internal static class ChuPolynomialValues {
         public static double[] XValues = {
             -25,

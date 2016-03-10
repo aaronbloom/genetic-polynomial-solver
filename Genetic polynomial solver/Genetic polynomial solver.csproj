@@ -47,16 +47,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Chromosome.cs" />
-    <Compile Include="ChuPolynomialValues.cs" />
-    <Compile Include="GeneticAlgorithm.cs" />
+    <Compile Include="Algorithm\Chromosome.cs" />
+    <Compile Include="Algorithm\ChuPolynomialValues.cs" />
+    <Compile Include="Algorithm\GeneticAlgorithm.cs" />
     <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MainWindow.Designer.cs">
       <DependentUpon>MainWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="Polynomial.cs" />
+    <Compile Include="Algorithm\Polynomial.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="MainWindow.resx">

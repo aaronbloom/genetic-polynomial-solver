@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Genetic_polynomial_solver {
+namespace Genetic_polynomial_solver.Algorithm {
     internal class Polynomial {
         public static int CoefficientCount = 6;
 

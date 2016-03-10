@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Channels;
 
-namespace Genetic_polynomial_solver {
+namespace Genetic_polynomial_solver.Algorithm {
     class GeneticAlgorithm {
 
         public readonly int POPULATION_SIZE = 10000;

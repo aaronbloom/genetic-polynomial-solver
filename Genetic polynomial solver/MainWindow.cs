@@ -9,6 +9,9 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Genetic_polynomial_solver {
     public partial class MainWindow : Form {
+
+        //Some bad, Debugging code for simple graph GUI
+   
         public MainWindow() {
             InitializeComponent();
         }
@@ -16,6 +19,7 @@ namespace Genetic_polynomial_solver {
         double graphNumberConstraint = 99999999999999;
 
         private Series candidateSeries;
+        private Series targetSeries;
         private Series bestCandidateFitness;
         private Series averageCandidateFitness;
         private Series worstCandidateFitness;
@@ -25,25 +29,40 @@ namespace Genetic_polynomial_solver {
         private List<double> bestFitnessList = new List<double>();
 
         private void Form1_Load(object sender, EventArgs e) {
-            candidateSeries = new Series();
-            chartResult.Series.Add(candidateSeries);
-            candidateSeries.ChartType = SeriesChartType.Point;
-            chartResult.Series[0].ChartType = SeriesChartType.Point;
+
+            targetSeries = new Series {
+                ChartType = SeriesChartType.Point,
+                BorderWidth = 5,
+                Name = "Best",
+            };
+            chartResult.Series.Add(targetSeries);
+
+            //Add initial tagert series
             for (int i = 0; i < ChuPolynomialValues.XValues.Length; i++) {
-                chartResult.Series[0].Points.AddXY(ChuPolynomialValues.XValues[i], ChuPolynomialValues.YValues[i]);
+                targetSeries.Points.AddXY(ChuPolynomialValues.XValues[i], ChuPolynomialValues.YValues[i]);
             }
+
+            candidateSeries = new Series {
+                ChartType = SeriesChartType.Point,
+                BorderWidth = 5,
+                Name = "GA",
+            };
+            chartResult.Series.Add(candidateSeries);
 
             bestCandidateFitness = new Series {
                 ChartType = SeriesChartType.Line,
-                BorderWidth = 5
+                BorderWidth = 5,
+                Name = "Best",
             };
             worstCandidateFitness = new Series {
                 ChartType = SeriesChartType.Line,
-                BorderWidth = 5
+                BorderWidth = 5,
+                Name = "Worst"
             };
             averageCandidateFitness = new Series {
                 ChartType = SeriesChartType.Line,
-                BorderWidth = 5
+                BorderWidth = 5,
+                Name = "Average"
             };
             chartProgress.Series.Add(bestCandidateFitness);
             chartProgress.Series.Add(worstCandidateFitness);
@@ -73,10 +92,6 @@ namespace Genetic_polynomial_solver {
             }
             System.Diagnostics.Debug.WriteLine("Fittest chromosome¬");
 
-            textBoxOutput.Text = "";
-            /*foreach (double yValue in fittestChromosome.YValues) {
-                textBoxOutput.AppendText(yValue + "\r\n");
-            }*/
             candidateSeries.Points.Clear();
             for (int i = 0; i < ChuPolynomialValues.XValues.Length; i++) {
                 for (int index = 0; index < chromosomes.Count && index < 10; index++) {
@@ -91,8 +106,8 @@ namespace Genetic_polynomial_solver {
             double average = chromosomes.Average(chromosome => chromosome.Fitness);
 
             bestCandidateFitness.Points.AddY(best / graphNumberConstraint);
-            //worstCandidateFitness.Points.AddY(worst / graphNumberConstraint);
-            //averageCandidateFitness.Points.AddY(average / graphNumberConstraint);
+            worstCandidateFitness.Points.AddY(worst / graphNumberConstraint);
+            averageCandidateFitness.Points.AddY(average / graphNumberConstraint);
 
             bestFitnessList.Add(best);
             worstFitnessList.Add(worst);
@@ -100,6 +115,7 @@ namespace Genetic_polynomial_solver {
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
+            //File
             System.Diagnostics.Debug.WriteLine("Done");
 
             var csv = new StringBuilder();

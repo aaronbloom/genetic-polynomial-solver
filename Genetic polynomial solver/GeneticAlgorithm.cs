@@ -27,7 +27,7 @@ namespace Genetic_polynomial_solver {
             //loop through generations of chromosomes
             for (int i = 0; i < GENERATIONS; i++) {
                 population = RunGeneration(population);
-                worker.ReportProgress(i / POPULATION_SIZE * 100, population);
+                worker.ReportProgress(i / GENERATIONS * 100, population);
                 System.Diagnostics.Debug.WriteLine("Generation: " + i);
                 population = RunBreeding(population);
             }
